@@ -9,7 +9,7 @@
     "*请上传并填写参考信息": "*Please upload and fill reference information",
     "*请填写需要合成的目标文本和语种模式": "*Please fill in the target text and language mode for synthesis",
     ".list标注文件的路径": ".list annotation file path",
-    ".限制范围越小判别效果越好。": "Less Multilingual is better",
+    ".限制范围越小判别效果越好。": " (Less Multilingual is better)",
     "0-前置数据集获取工具": "0-Fetch dataset",
     "0a-UVR5人声伴奏分离&去混响去延迟工具": "0a-UVR5 webui (for vocal separation, deecho, dereverb and denoise)",
     "0b-语音切分工具": "0b-Audio slicer",
