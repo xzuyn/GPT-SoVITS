@@ -27,8 +27,8 @@ try:
 except:...
 
 version=os.environ.get("version","v2")
-pretrained_sovits_name=["GPT_SoVITS/pretrained_models/gsv-v2final-pretrained/s2G2333k.pth", "GPT_SoVITS/pretrained_models/s2G488k.pth"]
-pretrained_gpt_name=["GPT_SoVITS/pretrained_models/gsv-v2final-pretrained/s1bert25hz-5kh-longer-epoch=12-step=369668.ckpt", "GPT_SoVITS/pretrained_models/s1bert25hz-2kh-longer-epoch=68e-step=50232.ckpt"]
+pretrained_sovits_name=["GPT_SoVITS/pretrained_models/gsv-v2final-pretrained/s2G2333k.safetensors", "GPT_SoVITS/pretrained_models/s2G488k.safetensors"]
+pretrained_gpt_name=["GPT_SoVITS/pretrained_models/gsv-v2final-pretrained/s1bert25hz-5kh-longer-epoch=12-step=369668.safetensors", "GPT_SoVITS/pretrained_models/s1bert25hz-2kh-longer-epoch=68e-step=50232.safetensors"]
 
 _ =[[],[]]
 for i in range(2):
@@ -91,6 +91,7 @@ from time import time as ttime
 from module.mel_processing import spectrogram_torch
 from tools.my_utils import load_audio
 from tools.i18n.i18n import I18nAuto, scan_language_list
+from safetensors.torch import load_file
 
 language=os.environ.get("language","Auto")
 language=sys.argv[-1] if sys.argv[-1] in scan_language_list() else language
@@ -187,11 +188,12 @@ else:
 
 def change_sovits_weights(sovits_path,prompt_language=None,text_language=None):
     global vq_model, hps, version, dict_language
-    dict_s2 = torch.load(sovits_path, map_location="cpu")
-    hps = dict_s2["config"]
+    dict_s2 = load_file(sovits_path, device="cpu")
+    # TODO: Remove hardcoded config
+    hps = {'train': {'log_interval': 100, 'eval_interval': 200, 'seed': 1234, 'epochs': 15, 'learning_rate': 0.0001, 'betas': [0.8, 0.99], 'eps': 1e-09, 'batch_size': 8, 'fp16_run': False, 'lr_decay': 0.999875, 'segment_size': 20480, 'init_lr_ratio': 1, 'warmup_epochs': 0, 'c_mel': 45, 'c_kl': 1.0}, 'data': {'max_wav_value': 32768.0, 'sampling_rate': 32000, 'filter_length': 2048, 'hop_length': 640, 'win_length': 2048, 'n_mel_channels': 128, 'mel_fmin': 0.0, 'mel_fmax': None, 'add_blank': True, 'n_speakers': 300, 'cleaned_text': True}, 'model': {'inter_channels': 192, 'hidden_channels': 192, 'filter_channels': 768, 'n_heads': 2, 'n_layers': 6, 'kernel_size': 3, 'p_dropout': 0.1, 'resblock': '1', 'resblock_kernel_sizes': [3, 7, 11], 'resblock_dilation_sizes': [[1, 3, 5], [1, 3, 5], [1, 3, 5]], 'upsample_rates': [10, 8, 2, 2, 2], 'upsample_initial_channel': 512, 'upsample_kernel_sizes': [16, 16, 8, 2, 2], 'n_layers_q': 3, 'use_spectral_norm': False, 'gin_channels': 512, 'semantic_frame_rate': '25hz', 'freeze_quantizer': True}, 's2_ckpt_dir': 'logs/s2/big2k1ft_ko_5commit2', 'content_module': 'cnhubert'}
     hps = DictToAttrRecursive(hps)
     hps.model.semantic_frame_rate = "25hz"
-    if dict_s2['weight']['enc_p.text_embedding.weight'].shape[0] == 322:
+    if dict_s2['enc_p.text_embedding.weight'].shape[0] == 322:
         hps.model.version = "v1"
     else:
         hps.model.version = "v2"
@@ -210,7 +212,7 @@ def change_sovits_weights(sovits_path,prompt_language=None,text_language=None):
     else:
         vq_model = vq_model.to(device)
     vq_model.eval()
-    print(vq_model.load_state_dict(dict_s2["weight"], strict=False))
+    print(vq_model.load_state_dict(dict_s2, strict=False))
     dict_language = dict_language_v1 if version =='v1' else dict_language_v2
     with open("./weight.json")as f:
         data=f.read()
@@ -238,11 +240,12 @@ change_sovits_weights(sovits_path)
 def change_gpt_weights(gpt_path):
     global hz, max_sec, t2s_model, config
     hz = 50
-    dict_s1 = torch.load(gpt_path, map_location="cpu")
-    config = dict_s1["config"]
+    dict_s1 = load_file(gpt_path, device="cpu")
+    # TODO: Remove hardcoded config
+    config = {'train': {'seed': 1234, 'epochs': 200, 'batch_size': 5, 'save_every_n_epoch': 1, 'precision': '16-mixed', 'gradient_clip': 1.0}, 'optimizer': {'lr': 0.01, 'lr_init': 1e-05, 'lr_end': 0.0001, 'warmup_steps': 2000, 'decay_steps': 40000}, 'data': {'max_eval_sample': 8, 'max_sec': 57, 'num_workers': 4, 'pad_val': 1024}, 'model': {'vocab_size': 1025, 'phoneme_vocab_size': 732, 'embedding_dim': 512, 'hidden_dim': 512, 'head': 16, 'linear_units': 2048, 'n_layer': 24, 'dropout': 0, 'EOS': 1024, 'random_bert': 0}, 'inference': {'top_k': 5}}
     max_sec = config["data"]["max_sec"]
     t2s_model = Text2SemanticLightningModule(config, "****", is_train=False)
-    t2s_model.load_state_dict(dict_s1["weight"])
+    t2s_model.load_state_dict(dict_s1)
     if is_half == True:
         t2s_model = t2s_model.half()
     t2s_model = t2s_model.to(device)
