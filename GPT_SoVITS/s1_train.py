@@ -26,11 +26,13 @@ from AR.utils import get_newest_ckpt
 from collections import OrderedDict
 from time import time as ttime
 import shutil
+from safetensors.torch import save_file
+
 def my_save(fea,path):#####fix issue: torch.save doesn't support chinese path
     dir=os.path.dirname(path)
     name=os.path.basename(path)
-    tmp_path="%s.pth"%(ttime())
-    torch.save(fea,tmp_path)
+    tmp_path="%s.safetensors"%(ttime())
+    save_file(fea,tmp_path)
     shutil.move(tmp_path,"%s/%s"%(dir,name))
 
 
@@ -82,8 +84,8 @@ class my_model_ckpt(ModelCheckpoint):
                     # print(os.environ)
                     if(os.environ.get("LOCAL_RANK","0")=="0"):
                         my_save(
-                            to_save_od,
-                            "%s/%s-e%s.ckpt"
+                            to_save_od["weight"],
+                            "%s/%s-e%s.safetensors"
                             % (
                                 self.half_weights_save_dir,
                                 self.exp_name,

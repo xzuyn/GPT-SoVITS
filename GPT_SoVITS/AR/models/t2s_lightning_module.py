@@ -11,6 +11,7 @@ from pytorch_lightning import LightningModule
 from AR.models.t2s_model import Text2SemanticDecoder
 from AR.modules.lr_schedulers import WarmupCosineLRSchedule
 from AR.modules.optim import ScaledAdam
+from safetensors.torch import load_file
 
 class Text2SemanticLightningModule(LightningModule):
     def __init__(self, config, output_dir, is_train=True):
@@ -23,7 +24,7 @@ class Text2SemanticLightningModule(LightningModule):
             # print(self.load_state_dict(torch.load(pretrained_s1,map_location="cpu")["state_dict"]))
             print(
                 self.load_state_dict(
-                    torch.load(pretrained_s1, map_location="cpu")["weight"]
+                    load_file(pretrained_s1, device="cpu")
                 )
             )
         if is_train:

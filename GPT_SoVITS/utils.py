@@ -66,11 +66,13 @@ def load_checkpoint(checkpoint_path, model, optimizer=None, skip_optimizer=False
 
 from time import time as ttime
 import shutil
+from safetensors.torch import save_file
+
 def my_save(fea,path):#####fix issue: torch.save doesn't support chinese path
     dir=os.path.dirname(path)
     name=os.path.basename(path)
-    tmp_path="%s.pth"%(ttime())
-    torch.save(fea,tmp_path)
+    tmp_path="%s.safetensors"%(ttime())
+    save_file(fea,tmp_path)
     shutil.move(tmp_path,"%s/%s"%(dir,name))
 
 def save_checkpoint(model, optimizer, learning_rate, iteration, checkpoint_path):
@@ -84,13 +86,17 @@ def save_checkpoint(model, optimizer, learning_rate, iteration, checkpoint_path)
     else:
         state_dict = model.state_dict()
     # torch.save(
+    # my_save(
+    #     {
+    #         "model": state_dict,
+    #         "iteration": iteration,
+    #         "optimizer": optimizer.state_dict(),
+    #         "learning_rate": learning_rate,
+    #     },
+    #     checkpoint_path,
+    # )
     my_save(
-        {
-            "model": state_dict,
-            "iteration": iteration,
-            "optimizer": optimizer.state_dict(),
-            "learning_rate": learning_rate,
-        },
+        state_dict,
         checkpoint_path,
     )
 

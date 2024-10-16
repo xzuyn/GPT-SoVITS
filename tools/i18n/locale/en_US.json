@@ -208,5 +208,7 @@
     "切分后文本": "Segmented text",
     "后续将支持转音素、手工修改音素、语音合成分步执行。": "In the future, phoneme conversion, manual phoneme modification, and speech synthesis will be supported step by step.",
     "终止合成": "Terminate synthesis",
-    "切分": "Cut"
+    "切分": "Cut",
+    "文本进程执行中": "Text process is executing",
+    "文本进程成功": "text process successful"
 }

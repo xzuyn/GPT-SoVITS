@@ -183,11 +183,11 @@ def get_weights_names(GPT_weight_root, SoVITS_weight_root):
     SoVITS_names = [i for i in pretrained_sovits_name]
     for path in SoVITS_weight_root:
         for name in os.listdir(path):
-            if name.endswith(".pth"): SoVITS_names.append("%s/%s" % (path, name))
+            if name.endswith(".safetensors"): SoVITS_names.append("%s/%s" % (path, name))
     GPT_names = [i for i in pretrained_gpt_name]
     for path in GPT_weight_root:
         for name in os.listdir(path):
-            if name.endswith(".ckpt"): GPT_names.append("%s/%s" % (path, name))
+            if name.endswith(".safetensors"): GPT_names.append("%s/%s" % (path, name))
     return SoVITS_names, GPT_names
 
 

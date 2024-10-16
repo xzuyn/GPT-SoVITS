@@ -32,6 +32,7 @@ from module.models import (
 from module.losses import generator_loss, discriminator_loss, feature_loss, kl_loss
 from module.mel_processing import mel_spectrogram_torch, spec_to_mel_torch
 from process_ckpt import savee
+from safetensors.torch import load_file
 
 torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = False
@@ -217,10 +218,10 @@ def run(rank, n_gpus, hps):
                 logger.info("loaded pretrained %s" % hps.train.pretrained_s2G)
             print(
                 net_g.module.load_state_dict(
-                    torch.load(hps.train.pretrained_s2G, map_location="cpu")["weight"],
+                    load_file(hps.train.pretrained_s2G, device="cpu"),
                     strict=False,
                 ) if torch.cuda.is_available() else net_g.load_state_dict(
-                    torch.load(hps.train.pretrained_s2G, map_location="cpu")["weight"],
+                    load_file(hps.train.pretrained_s2G, device="cpu"),
                     strict=False,
                 )
             )  ##测试不加载优化器
@@ -229,9 +230,9 @@ def run(rank, n_gpus, hps):
                 logger.info("loaded pretrained %s" % hps.train.pretrained_s2D)
             print(
                 net_d.module.load_state_dict(
-                    torch.load(hps.train.pretrained_s2D, map_location="cpu")["weight"]
+                    load_file(hps.train.pretrained_s2D, device="cpu")
                 ) if torch.cuda.is_available() else net_d.load_state_dict(
-                    torch.load(hps.train.pretrained_s2D, map_location="cpu")["weight"]
+                    load_file(hps.train.pretrained_s2D, device="cpu")
                 )
             )
 
@@ -455,7 +456,7 @@ def train_and_evaluate(
                 hps.train.learning_rate,
                 epoch,
                 os.path.join(
-                    "%s/logs_s2" % hps.data.exp_dir, "G_{}.pth".format(global_step)
+                    "%s/logs_s2" % hps.data.exp_dir, "G_{}.safetensors".format(global_step)
                 ),
             )
             utils.save_checkpoint(
@@ -464,7 +465,7 @@ def train_and_evaluate(
                 hps.train.learning_rate,
                 epoch,
                 os.path.join(
-                    "%s/logs_s2" % hps.data.exp_dir, "D_{}.pth".format(global_step)
+                    "%s/logs_s2" % hps.data.exp_dir, "D_{}.safetensors".format(global_step)
                 ),
             )
         else:
@@ -474,7 +475,7 @@ def train_and_evaluate(
                 hps.train.learning_rate,
                 epoch,
                 os.path.join(
-                    "%s/logs_s2" % hps.data.exp_dir, "G_{}.pth".format(233333333333)
+                    "%s/logs_s2" % hps.data.exp_dir, "G_{}.safetensors".format(233333333333)
                 ),
             )
             utils.save_checkpoint(
@@ -483,7 +484,7 @@ def train_and_evaluate(
                 hps.train.learning_rate,
                 epoch,
                 os.path.join(
-                    "%s/logs_s2" % hps.data.exp_dir, "D_{}.pth".format(233333333333)
+                    "%s/logs_s2" % hps.data.exp_dir, "D_{}.safetensors".format(233333333333)
                 ),
             )
         if rank == 0 and hps.train.if_save_every_weights == True:

@@ -140,11 +140,11 @@ def get_weights_names():
     SoVITS_names = [name for name in pretrained_sovits_name if name!=""]
     for path in SoVITS_weight_root:
         for name in os.listdir(path):
-            if name.endswith(".pth"): SoVITS_names.append("%s/%s" % (path, name))
+            if name.endswith(".safetensors"): SoVITS_names.append("%s/%s" % (path, name))
     GPT_names = [name for name in pretrained_gpt_name if name!=""]
     for path in GPT_weight_root:
         for name in os.listdir(path):
-            if name.endswith(".ckpt"): GPT_names.append("%s/%s" % (path, name))
+            if name.endswith(".safetensors"): GPT_names.append("%s/%s" % (path, name))
     return SoVITS_names, GPT_names
 
 SoVITS_names,GPT_names = get_weights_names()
@@ -911,7 +911,7 @@ with gr.Blocks(title="GPT-SoVITS WebUI") as app:
                 gr.Markdown(value=i18n("输出logs/实验名目录下应有23456开头的文件和文件夹"))
                 with gr.Row():
                     with gr.Row():
-                        inp_text = gr.Textbox(label=i18n("*文本标注文件"),value=r"D:\RVC1006\GPT-SoVITS\raw\xxx.list",interactive=True,scale=10)
+                        inp_text = gr.Textbox(label=i18n("*文本标注文件"),value=r"GPT-SoVITS/raw/xxx.list",interactive=True,scale=10)
                     with gr.Row():
                         inp_wav_dir = gr.Textbox(
                             label=i18n("*训练集音频文件目录"),
