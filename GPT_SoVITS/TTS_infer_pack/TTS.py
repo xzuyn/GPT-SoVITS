@@ -26,6 +26,7 @@ from tools.my_utils import load_audio
 from module.mel_processing import spectrogram_torch
 from TTS_infer_pack.text_segmentation_method import splits
 from TTS_infer_pack.TextPreprocessor import TextPreprocessor
+from safetensors.torch import load_file
 language=os.environ.get("language","Auto")
 language=sys.argv[-1] if sys.argv[-1] in scan_language_list() else language
 i18n = I18nAuto(language=language)
@@ -304,9 +305,10 @@ class TTS:
     def init_vits_weights(self, weights_path: str):
         print(f"Loading VITS weights from {weights_path}")
         self.configs.vits_weights_path = weights_path
-        dict_s2 = torch.load(weights_path, map_location=self.configs.device)
-        hps = dict_s2["config"]
-        if dict_s2['weight']['enc_p.text_embedding.weight'].shape[0] == 322:
+        dict_s2 = load_file(weights_path, device=self.configs.device)
+        # TODO: Remove hardcoded config
+        hps = {'train': {'log_interval': 100, 'eval_interval': 200, 'seed': 1234, 'epochs': 15, 'learning_rate': 0.0001, 'betas': [0.8, 0.99], 'eps': 1e-09, 'batch_size': 8, 'fp16_run': False, 'lr_decay': 0.999875, 'segment_size': 20480, 'init_lr_ratio': 1, 'warmup_epochs': 0, 'c_mel': 45, 'c_kl': 1.0}, 'data': {'max_wav_value': 32768.0, 'sampling_rate': 32000, 'filter_length': 2048, 'hop_length': 640, 'win_length': 2048, 'n_mel_channels': 128, 'mel_fmin': 0.0, 'mel_fmax': None, 'add_blank': True, 'n_speakers': 300, 'cleaned_text': True}, 'model': {'inter_channels': 192, 'hidden_channels': 192, 'filter_channels': 768, 'n_heads': 2, 'n_layers': 6, 'kernel_size': 3, 'p_dropout': 0.1, 'resblock': '1', 'resblock_kernel_sizes': [3, 7, 11], 'resblock_dilation_sizes': [[1, 3, 5], [1, 3, 5], [1, 3, 5]], 'upsample_rates': [10, 8, 2, 2, 2], 'upsample_initial_channel': 512, 'upsample_kernel_sizes': [16, 16, 8, 2, 2], 'n_layers_q': 3, 'use_spectral_norm': False, 'gin_channels': 512, 'semantic_frame_rate': '25hz', 'freeze_quantizer': True}, 's2_ckpt_dir': 'logs/s2/big2k1ft_ko_5commit2', 'content_module': 'cnhubert'}
+        if dict_s2['enc_p.text_embedding.weight'].shape[0] == 322:
             self.configs.update_version("v1")
         else:
             self.configs.update_version("v2")
@@ -333,7 +335,7 @@ class TTS:
             
         vits_model = vits_model.to(self.configs.device)
         vits_model = vits_model.eval()
-        vits_model.load_state_dict(dict_s2["weight"], strict=False)
+        vits_model.load_state_dict(dict_s2, strict=False)
         self.vits_model = vits_model
         if self.configs.is_half and str(self.configs.device)!="cpu":
             self.vits_model = self.vits_model.half()
@@ -344,11 +346,12 @@ class TTS:
         self.configs.t2s_weights_path = weights_path
         self.configs.save_configs()
         self.configs.hz = 50
-        dict_s1 = torch.load(weights_path, map_location=self.configs.device)
-        config = dict_s1["config"]
+        dict_s1 = load_file(weights_path, device=self.configs.device)
+        # TODO: Remove hardcoded config
+        config = {'train': {'seed': 1234, 'epochs': 200, 'batch_size': 5, 'save_every_n_epoch': 1, 'precision': '16-mixed', 'gradient_clip': 1.0}, 'optimizer': {'lr': 0.01, 'lr_init': 1e-05, 'lr_end': 0.0001, 'warmup_steps': 2000, 'decay_steps': 40000}, 'data': {'max_eval_sample': 8, 'max_sec': 57, 'num_workers': 4, 'pad_val': 1024}, 'model': {'vocab_size': 1025, 'phoneme_vocab_size': 732, 'embedding_dim': 512, 'hidden_dim': 512, 'head': 16, 'linear_units': 2048, 'n_layer': 24, 'dropout': 0, 'EOS': 1024, 'random_bert': 0}, 'inference': {'top_k': 5}}
         self.configs.max_sec = config["data"]["max_sec"]
         t2s_model = Text2SemanticLightningModule(config, "****", is_train=False)
-        t2s_model.load_state_dict(dict_s1["weight"])
+        t2s_model.load_state_dict(dict_s1)
         t2s_model = t2s_model.to(self.configs.device)
         t2s_model = t2s_model.eval()
         self.t2s_model = t2s_model

@@ -238,7 +238,7 @@ with gr.Blocks(title="GPT-SoVITS WebUI") as app:
             prompt_text = gr.Textbox(label=i18n("主参考音频的文本"), value="", lines=2)
             with gr.Row():
                 prompt_language = gr.Dropdown(
-                    label=i18n("主参考音频的语种"), choices=list(dict_language.keys()), value=i18n("中文")
+                    label=i18n("主参考音频的语种"), choices=list(dict_language.keys()), value=i18n("英文")
                 )
                 with gr.Column():
                     ref_text_free = gr.Checkbox(label=i18n("开启无参考文本模式。不填参考文本亦相当于开启。"), value=False, interactive=True, show_label=True)
@@ -248,7 +248,7 @@ with gr.Blocks(title="GPT-SoVITS WebUI") as app:
             gr.Markdown(value=i18n("*请填写需要合成的目标文本和语种模式"))
             text = gr.Textbox(label=i18n("需要合成的文本"), value="", lines=20, max_lines=20)
             text_language = gr.Dropdown(
-                label=i18n("需要合成的文本的语种"), choices=list(dict_language.keys()), value=i18n("中文")
+                label=i18n("需要合成的文本的语种"), choices=list(dict_language.keys()), value=i18n("英文")
             )
 
         

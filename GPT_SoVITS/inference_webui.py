@@ -400,7 +400,7 @@ def merge_short_text_in_array(texts, threshold):
 ##ref_wav_path+prompt_text+prompt_language+text(单个)+text_language+top_k+top_p+temperature
 # cache_tokens={}#暂未实现清理机制
 cache= {}
-def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language, how_to_cut=i18n("不切"), top_k=20, min_p=0.0, top_p=0.6, temperature=0.6, ref_free
+def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language, how_to_cut=i18n("不切"), top_k=20, min_p=0.0, top_p=0.6, temperature=0.6, repetition_penalty=1.35, ref_free
     =False,speed=1,if_freeze=False,inp_refs=None):
     global cache
     if ref_wav_path:pass
@@ -508,6 +508,7 @@ def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language,
                     min_p=min_p,
                     top_p=top_p,
                     temperature=temperature,
+                    repetition_penalty=repetition_penalty,
                     early_stop_num=hz * max_sec,
                 )
                 pred_semantic = pred_semantic[:, -idx:].unsqueeze(0)
@@ -734,7 +735,8 @@ with gr.Blocks(title="GPT-SoVITS WebUI") as app:
                 top_k = gr.Slider(minimum=1,maximum=100,step=1,label=i18n("top_k"),value=15,interactive=True, scale=1)
                 min_p = gr.Slider(minimum=0,maximum=1,step=0.05,label=i18n("min_p"),value=0.0,interactive=True)
                 top_p = gr.Slider(minimum=0,maximum=1,step=0.05,label=i18n("top_p"),value=1,interactive=True, scale=1)
-                temperature = gr.Slider(minimum=0,maximum=1,step=0.05,label=i18n("temperature"),value=1,interactive=True,  scale=1) 
+                temperature = gr.Slider(minimum=0,maximum=1,step=0.05,label=i18n("temperature"),value=1,interactive=True,  scale=1)
+                repetition_penalty = gr.Slider(minimum=0,maximum=2,step=0.05,label=i18n("重复惩罚"),value=1.35,interactive=True)
             # with gr.Column():
             #     gr.Markdown(value=i18n("手工调整音素。当音素框不为空时使用手工音素输入推理，无视目标文本框。"))
             #     phoneme=gr.Textbox(label=i18n("音素框"), value="")
@@ -745,7 +747,7 @@ with gr.Blocks(title="GPT-SoVITS WebUI") as app:
 
         inference_button.click(
             get_tts_wav,
-            [inp_ref, prompt_text, prompt_language, text, text_language, how_to_cut, top_k, min_p, top_p, temperature, ref_text_free,speed,if_freeze,inp_refs],
+            [inp_ref, prompt_text, prompt_language, text, text_language, how_to_cut, top_k, min_p, top_p, temperature, repetition_penalty, ref_text_free,speed,if_freeze,inp_refs],
             [output],
         )
         SoVITS_dropdown.change(change_sovits_weights, [SoVITS_dropdown,prompt_language,text_language], [prompt_language,text_language,prompt_text,prompt_language,text,text_language])
