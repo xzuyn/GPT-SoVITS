@@ -710,7 +710,7 @@ with gr.Blocks(title="GPT-SoVITS WebUI") as app:
                 prompt_text = gr.Textbox(label=i18n("参考音频的文本"), value="", lines=5, max_lines=5,scale=1)
             with gr.Column(scale=14):
                 prompt_language = gr.Dropdown(
-                    label=i18n("参考音频的语种"), choices=list(dict_language.keys()), value=i18n("中文"),
+                    label=i18n("参考音频的语种"), choices=list(dict_language.keys()), value=i18n("英文"),
                 )
                 inp_refs = gr.File(label=i18n("可选项：通过拖拽多个文件上传多个参考音频（建议同性），平均融合他们的音色。如不填写此项，音色由左侧单个参考音频控制。如是微调模型，建议参考音频全部在微调训练集音色内，底模不用管。"),file_count="multiple")
         gr.Markdown(html_center(i18n("*请填写需要合成的目标文本和语种模式"),'h3'))
@@ -719,7 +719,7 @@ with gr.Blocks(title="GPT-SoVITS WebUI") as app:
                 text = gr.Textbox(label=i18n("需要合成的文本"), value="", lines=26, max_lines=26)
             with gr.Column(scale=7):
                 text_language = gr.Dropdown(
-                        label=i18n("需要合成的语种")+i18n(".限制范围越小判别效果越好。"), choices=list(dict_language.keys()), value=i18n("中文"), scale=1
+                        label=i18n("需要合成的语种")+i18n(".限制范围越小判别效果越好。"), choices=list(dict_language.keys()), value=i18n("英文"), scale=1
                     )
                 how_to_cut = gr.Dropdown(
                         label=i18n("怎么切"),
